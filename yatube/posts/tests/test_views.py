@@ -58,7 +58,6 @@ class PostPagesTests(TestCase):
                 kwargs={'post_id': self.post.id}
             ): 'posts/create_post.html',
             reverse('posts:post_create'): 'posts/create_post.html',
-            'unexisting_page/': 'core/404.html'
         }
 
         for reverse_name, template in templates_pages_names.items():
