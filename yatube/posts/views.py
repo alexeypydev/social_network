@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.views.decorators.cache import cache_page
 
-from .models import Post, Group, User, Comment, Follow
+from .models import Post, Group, User, Follow
 from .forms import PostForm, CommentForm
 
 
@@ -67,7 +67,7 @@ def post_detail(request, post_id):
         'post': post,
         'posts_count': posts_count,
         'form': form,
-        'comments': Comment.objects.select_related('post')
+        'comments': post.comments.all()
     }
     return render(request, template, context)
 
