@@ -8,10 +8,10 @@ from .forms import PostForm, CommentForm
 
 
 POSTS_QUANTITY = 10
-cache_time_in_seconds = 20
+CACHE_TIME_IN_SECONDS = 20
 
 
-@cache_page(cache_time_in_seconds, key_prefix='index_page')
+@cache_page(CACHE_TIME_IN_SECONDS, key_prefix='index_page')
 def index(request):
     """Главная страница."""
     template = 'posts/index.html'
@@ -41,7 +41,7 @@ def profile(request, username):
     """Здесь код запроса к модели и создание словаря контекста."""
     template = 'posts/profile.html'
     author = get_object_or_404(User, username=username)
-    posts = Post.objects.filter(author=author)
+    posts = author.posts.all()
     posts_count = author.posts.count()
     following = (
         request.user.is_authenticated
@@ -61,14 +61,13 @@ def post_detail(request, post_id):
     """Здесь код запроса к модели и создание словаря контекста."""
     template = 'posts/post_detail.html'
     post = get_object_or_404(Post, id=post_id)
-    post_author = post.author.posts
-    posts_count = post_author.count()
-    form = CommentForm(request.POST or None)
+    posts_count = post.author.posts.count()
+    form = CommentForm
     context = {
         'post': post,
         'posts_count': posts_count,
         'form': form,
-        'comments': Comment.objects.filter(post=post)
+        'comments': Comment.objects.select_related('post')
     }
     return render(request, template, context)
 

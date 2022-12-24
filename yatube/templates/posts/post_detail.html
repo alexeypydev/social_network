@@ -31,7 +31,7 @@
       {% endthumbnail %}
       <p>{{ post.text}}</p>
       {% if request.user == post.author%}
-        <a href="{% url 'posts:post_edit' post.id %}">редактировать запись</a>
+        <a class="btn btn-primary" href="{% url 'posts:post_edit' post.id %}">редактировать запись</a>
       {% endif %}
       {% include 'posts/includes/add_comment_form.html' %}
     </article>

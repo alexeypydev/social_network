@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Профайл пользователя {{ author.get_full_name }}{% endblock%}
+{% block title %}{{ author.get_full_name }}{% endblock%}
 {% block content %}
 {% load thumbnail %}
 <div class="mb-5">     
@@ -24,10 +24,10 @@
   <article>
     {% for post in page_obj %}
       <ul>
-        <li>
+        <!-- <li>
           Автор: {{ post.author.get_full_name }}
           <a href="{% url 'posts:profile' post.author %}">все посты пользователя</a>
-        </li>
+        </li> -->
         <li>
           Дата публикации: {{ post.pub_date|date:"d E Y" }} 
         </li>

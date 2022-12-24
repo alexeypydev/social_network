@@ -99,17 +99,15 @@ class PostPagesTests(TestCase):
             'text': forms.fields.CharField,
             'group': forms.fields.ChoiceField,
         }
+        text_field = response.context.get('form').instance.text
+        group_field = response.context.get('form').instance.group.title
 
         for value, expected in form_fields.items():
             with self.subTest(value=value):
                 form_field = response.context.get('form').fields.get(value)
                 self.assertIsInstance(form_field, expected)
-
-        text_field = response.context.get('form').instance.text
-        group_field = response.context.get('form').instance.group.title
-
-        self.assertEqual(text_field, 'Тестовый пост')
-        self.assertEqual(group_field, 'Тестовая группа')
+                self.assertEqual(text_field, 'Тестовый пост')
+                self.assertEqual(group_field, 'Тестовая группа')
 
     def test_index_show_correct_context(self):
         """Шаблон index сформирован с правильным контекстом."""
@@ -184,44 +182,44 @@ class PaginatorViewsTest(TestCase):
         cache.clear()
 
     def test_first_page_contains_ten_records(self):
-        first_pages = {
-            reverse('posts:index'): 10,
+        first_pages = (
+            reverse('posts:index'),
             reverse(
                 'posts:group_list',
                 kwargs={'slug': self.group.slug}
-            ): 10,
+            ),
             reverse(
                 'posts:profile',
                 kwargs={'username': self.user.username}
-            ): 10,
-        }
+            ),
+        )
 
-        for reverse_name, first_page in first_pages.items():
+        for reverse_name in first_pages:
             with self.subTest(reverse_name=reverse_name):
                 response = self.client.get(reverse_name)
                 self.assertEqual(len(response.context['page_obj']),
-                                 first_page
+                                 POSTS_QUANTITY
                                  )
 
     def test_second_page_contains_three_records(self):
         postfix = '?page=2'
-        second_pages = {
-            reverse('posts:index'): TEST_POSTS_FOR_SECOND_PAGE,
+        second_pages = (
+            reverse('posts:index'),
             reverse(
                 'posts:group_list',
                 kwargs={'slug': self.group.slug}
-            ): 3,
+            ),
             reverse(
                 'posts:profile',
                 kwargs={'username': self.user.username}
-            ): 3,
-        }
+            ),
+        )
 
-        for second_page, reverse_name in second_pages.items():
+        for reverse_name in second_pages:
             with self.subTest(reverse_name=reverse_name):
-                response = self.client.get(f'{second_page}{postfix}')
+                response = self.client.get(f'{reverse_name}{postfix}')
                 self.assertEqual(len(response.context['page_obj']),
-                                 reverse_name
+                                 TEST_POSTS_FOR_SECOND_PAGE
                                  )
 
 
@@ -288,21 +286,6 @@ class TestFollow(TestCase):
         self.user_client.force_login(self.user)
         self.another_user_client = Client()
         self.another_user_client.force_login(self.another_user)
-
-    def test_user_followng_many_users(self):
-        follow_count = Follow.objects.count()
-        Follow.objects.create(user=self.user, author=self.user_2)
-        self.assertEqual(Follow.objects.count(), follow_count + 1)
-        self.assertTrue(Follow.objects.filter(user=self.user,
-                                              author=self.user_2).exists())
-
-    def test_user_unfollowng_many_users(self):
-        Follow.objects.create(user=self.user, author=self.user_2)
-        follow_count = Follow.objects.count()
-        user_unfollow = Follow.objects.filter(user=self.user,
-                                              author=self.user_2)
-        user_unfollow.delete()
-        self.assertEqual(Follow.objects.count(), follow_count - 1)
 
     def test_new_author_post_for_user_follow(self):
         Follow.objects.create(user=self.user, author=self.user_2)

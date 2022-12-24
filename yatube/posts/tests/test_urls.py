@@ -35,26 +35,26 @@ class PostURLTests(TestCase):
         self.authorized_client.force_login(self.post.author)
 
     def test_urls_exists_at_desired_location(self):
-        desired_locations = {
-            reverse('posts:index'): HTTPStatus.OK,
+        desired_locations = (
+            reverse('posts:index'),
             reverse(
                 'posts:group_list',
                 kwargs={'slug': self.group.slug}
-            ): HTTPStatus.OK,
+            ),
             reverse(
                 'posts:profile',
                 kwargs={'username': self.user.username}
-            ): HTTPStatus.OK,
+            ),
             reverse(
                 'posts:post_detail',
                 kwargs={'post_id': self.post.id}
-            ): HTTPStatus.OK
-        }
+            )
+        )
 
-        for status_code, address in desired_locations.items():
-            with self.subTest(address=address):
-                response = self.guest_client.get(status_code)
-                self.assertEqual(response.status_code, address)
+        for reverse_name in desired_locations:
+            with self.subTest(reverse_name=reverse_name):
+                response = self.guest_client.get(reverse_name)
+                self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_create_url_exists_at_desired_location(self):
         """Страница /create/ доступна авторизованному пользователю."""
@@ -91,3 +91,22 @@ class PostURLTests(TestCase):
         response = self.guest_client.get('unexisting_page/')
 
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
+
+    def test_follow_url_exists_at_desired_location(self):
+        """Страницы /follow/ доступна авторизованному пользователю."""
+        response = self.another_authorized_client.get(
+            f'/profile/{self.author.username}/follow/'
+        )
+
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_unfollow_url_exists_at_desired_location(self):
+        """Страница /unfollow/ доступна авторизованному пользователю."""
+        self.another_authorized_client.get(
+            f'/profile/{self.author.username}/follow/'
+        )
+        response = self.another_authorized_client.get(
+            f'/profile/{self.author.username}/unfollow/'
+        )
+
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
