@@ -62,7 +62,7 @@ def post_detail(request, post_id):
     template = 'posts/post_detail.html'
     post = get_object_or_404(Post, id=post_id)
     posts_count = post.author.posts.count()
-    form = CommentForm
+    form = CommentForm()
     context = {
         'post': post,
         'posts_count': posts_count,

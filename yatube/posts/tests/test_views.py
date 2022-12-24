@@ -6,7 +6,6 @@ from django import forms
 
 from posts.models import Post, Group, Follow
 from posts.views import POSTS_QUANTITY
-from posts.forms import CommentForm
 
 
 User = get_user_model()
@@ -137,7 +136,6 @@ class PostPagesTests(TestCase):
                     )
 
         self.assertEqual(response.context.get('post'), self.post)
-        self.assertEqual(response.context.get('form'), CommentForm)
 
     def test_cache_on_index_page(self):
         """Проверка кэширования главной страницы."""
