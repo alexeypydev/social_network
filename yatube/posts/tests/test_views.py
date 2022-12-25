@@ -9,7 +9,6 @@ from posts.views import POSTS_QUANTITY
 
 
 User = get_user_model()
-many_posts = []
 TEST_POSTS_FOR_SECOND_PAGE = 3
 
 
@@ -168,6 +167,7 @@ class PaginatorViewsTest(TestCase):
             slug='testgroup',
             description='Тестовое описание'
         )
+        many_posts = []
         for _ in range(POSTS_QUANTITY + TEST_POSTS_FOR_SECOND_PAGE):
             many_posts.append(Post(
                 text='Тестовый пост',
@@ -281,11 +281,8 @@ class TestFollow(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username='vasya')
         self.user_2 = User.objects.create_user(username='petya')
-        self.another_user = User.objects.create_user(username='tudum')
         self.user_client = Client()
         self.user_client.force_login(self.user)
-        self.another_user_client = Client()
-        self.another_user_client.force_login(self.another_user)
 
     def test_new_author_post_for_user_follow(self):
         Follow.objects.create(user=self.user, author=self.user_2)
@@ -294,7 +291,30 @@ class TestFollow(TestCase):
         for context in response.context['posts']:
             self.assertIn(post, context)
 
-        response_unfollow = self.another_user_client.get(
+        response_unfollow = self.user_client.get(
             reverse('posts:follow_index'))
         for context in response_unfollow.context['posts']:
             self.assertNotIn(post, context)
+
+    def test_follow(self):
+        follower_count = Follow.objects.count()
+        self.user_client.get(reverse(
+            'posts:profile_follow',
+            kwargs={'username': self.user_2})
+        )
+
+        self.assertEqual(Follow.objects.count(), follower_count + 1)
+        self.assertTrue(Follow.objects.filter(
+            user=self.user, author=self.user_2).exists())
+
+    def test_unfollow(self):
+        Follow.objects.create(user=self.user, author=self.user_2)
+        follower_count = Follow.objects.count()
+        self.user_client.get(reverse(
+            'posts:profile_unfollow',
+            kwargs={'username': self.user_2})
+        )
+
+        self.assertEqual(Follow.objects.count(), follower_count - 1)
+        self.assertFalse(Follow.objects.filter(
+            user=self.user, author=self.user_2).exists())
